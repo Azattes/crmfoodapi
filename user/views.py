@@ -4,7 +4,7 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from user.renderers import UserJSONRenderer
-from user.serializers import RegistrationSerializer, LoginSerializer, UserSerializer, RoleSerializer
+from user.serializers import RegistrationSerializer, LoginSerializer, UserSerializer, RoleSerializer, ChangePasswordSerializer
 from user.models import *
 
 
@@ -137,4 +137,17 @@ class UsersDetail(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = (IsAuthenticated,)
+    def post(self, request, format = None):
+        serializer = ChangePasswordSerializer(data=request.data)
+        user = request.user
+        if serializer.is_valid():
+            if user.check_password(serializer.data['oldpassword']):
+                user.set_password(serializer.data['newpassword'])
+                user.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

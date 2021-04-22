@@ -1,0 +1,7 @@
+db.sqlite3
+venv
+.env
+crmdood_app/__pycache__
+crmfood/__pycache__
+crmfood/.env
+user/__pycache__

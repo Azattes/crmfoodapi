@@ -51,16 +51,20 @@ class MealsToOrderSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
 
     tableid = serializers.PrimaryKeyRelatedField(queryset = Tables.objects.all())
-    mealsid = MealsSerializer(many=False)
+    mealsid = MealsSerializer(many=True)
 
     class Meta:
         model = Order
         fields = ['id', 'isitopen', 'waiterid', 'date', 'tableid', 'tablename', 'mealsid']
 
+    def get_table_name(self, obj):
+        table = obj.table_id
+        return str(table)
+
 
 class ChecksSerializer(serializers.ModelSerializer):
 
-    meals = MealsSerializer(many=False)
+    meals = MealsSerializer(many=True)
 
     class Meta:
         model = Checks

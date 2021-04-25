@@ -21,13 +21,16 @@ class Tables(models.Model):
     name = models.CharField(max_length=100)
 
 
+class ServicePercentage(models.Model):
+    percentage = models.IntegerField()
+
 class Order(models.Model):
     waiterid = models.ForeignKey(User, related_name='waiterid', on_delete=models.CASCADE)
     tableid = models.ForeignKey(Tables, related_name='table', on_delete=models.CASCADE)
     tablename = models.CharField(max_length=100)
     isitopen = models.BooleanField()
     date = models.DateTimeField(auto_now_add=True)
-    mealsid = models.ForeignKey(Meals, related_name='mealsid', on_delete=models.CASCADE)
+    mealsid = models.ManyToManyField(Meals)
 
 
 class Checks(models.Model):
@@ -35,16 +38,11 @@ class Checks(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     servicefree = models.IntegerField()
     totalsum = models.IntegerField()
-    meals = models.ForeignKey(Meals, related_name='meals', on_delete=models.CASCADE)
-
+    meals = models.ManyToManyField(Meals)
 
 class MealsToOrder(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
 
-
 class Statuses(models.Model):
     name = models.CharField(max_length=100)
 
-
-class ServicePercentage(models.Model):
-    percentage = models.IntegerField()

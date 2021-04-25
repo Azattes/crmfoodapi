@@ -141,7 +141,9 @@ class UsersDetail(APIView):
 
 
 class ChangePasswordView(APIView):
+    
     permission_classes = (IsAuthenticated,)
+
     def post(self, request, format = None):
         serializer = ChangePasswordSerializer(data=request.data)
         user = request.user

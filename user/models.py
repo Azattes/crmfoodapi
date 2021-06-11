@@ -18,43 +18,24 @@ class UserManager(BaseUserManager):
     to create `User` objects.
     """
 
-    def create_user(self, username, name, surname, phone, email, role, password=None):
+    def create_user(self, phone, password):
         """Create and return a `User` with an email, username and password."""
-        if username is None:
-            raise TypeError('Users must have a username.')
-
-        if email is None:
-            raise TypeError('Users must have an email address.')
-
-        if name is None or surname is None:
-            raise TypeError('Users must have a name.')
 
         if phone is None:
             raise TypeError('Users must have a phone.')
 
-        if password is None:
-            raise TypeError('Users must have a password.')
-
-        user = self.model(username=username, name=name, surname=surname, phone=phone, role=role, email=self.normalize_email(email))
+        user = self.model(phone=phone)
         user.set_password(password)
         user.save()
 
         return user
 
-    def create_superuser(self, name, surname, username, password, phone, email, role):
+    def create_superuser(self, phone, password):
         """
         Create and return a `User` with superuser (admin) permissions.
         """
         
-        if password is None:
-            raise TypeError('Superusers must have a password.')
-
-        if username is None:
-            raise TypeError('Superusers must have a username.')
-
-        role_obj = Role.objects.get(id=role)
-
-        user = self.create_user(username=username, email=email, password=password, phone=phone, role=role_obj, name=name, surname=surname)
+        user = self.create_user(phone=phone, password=password)
         user.is_superuser = True
         user.is_staff = True
         user.save()
@@ -67,23 +48,23 @@ class Role(models.Model):
 
 class User(AbstractBaseUser, PermissionsMixin):
 
-    username = models.CharField(db_index=True, max_length=255, unique=True)
-    email = models.EmailField(db_index=True, unique=True)
+    username = models.CharField(db_index=True, max_length=255, null=True)
+    # email = models.EmailField(db_index=True, unique=True)
     name = models.CharField(max_length = 255)
+    password = models.CharField(max_length=255, null=True)
     surname = models.CharField(max_length = 255)
-    role = models.ForeignKey(Role, on_delete = models.CASCADE, related_name='role')
-    phone = models.CharField(max_length = 255)
+    role = models.ForeignKey(Role, on_delete = models.SET_NULL, related_name='role', null=True)
+    phone = models.CharField(max_length = 255, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'name', 'surname', 'phone', 'role']
+    USERNAME_FIELD = 'phone'
 
     objects = UserManager()
 
-    def __str__(self):
-        return self.email
+    # def __str__(self):
+        # return self.email
 
     @property
     def token(self):

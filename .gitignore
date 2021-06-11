@@ -5,3 +5,5 @@ crmdood_app/__pycache__
 crmfood/__pycache__
 crmfood/.env
 user/__pycache__
+*.json
+*.pyc

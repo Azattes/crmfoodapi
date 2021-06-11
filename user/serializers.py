@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from user.models import User, Role
+from rest_framework.authtoken.models import Token
+from firebase_admin import auth
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -22,70 +24,36 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = User
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
-        fields = ['name', 'surname', 'phone', 'email', 'username', 'role', 'password', 'token']
+        fields = ['name', 'surname', 'phone', 'email',
+                  'username', 'role', 'password', 'token']
 
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
         return User.objects.create_user(**validated_data)
 
+
 class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=255)
-    username = serializers.CharField(max_length=255, read_only=True)
-    password = serializers.CharField(max_length=128, write_only=True)
+    phone = serializers.CharField(max_length=255, write_only=True)
+    id_token = serializers.CharField(write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
 
     def validate(self, data):
-        # The `validate` method is where we make sure that the current
-        # instance of `LoginSerializer` has "valid". In the case of logging a
-        # user in, this means validating that they've provided an email
-        # and password and that this combination matches one of the users in
-        # our database.
-        email = data.get('email', None)
-        password = data.get('password', None)
+        id_token = data.get('id_token')
+        phone = data.get('phone', None)
 
-        # Raise an exception if an
-        # email is not provided.
-        if email is None:
+        decoded_token = auth.verify_id_token(id_token)
+        uid = decoded_token['uid']
+        print(uid)
+
+        try:
+            user = User.objects.get(phone=phone)
+        except User.DoesNotExist:
             raise serializers.ValidationError(
-                'An email address is required to log in.'
-            )
+                "A user with this phone number does not exist")
 
-        # Raise an exception if a
-        # password is not provided.
-        if password is None:
-            raise serializers.ValidationError(
-                'A password is required to log in.'
-            )
-
-        # The `authenticate` method is provided by Django and handles checking
-        # for a user that matches this email/password combination. Notice how
-        # we pass `email` as the `username` value since in our User
-        # model we set `USERNAME_FIELD` as `email`.
-        user = authenticate(username=email, password=password)
-
-        # If no user was found matching this email/password combination then
-        # `authenticate` will return `None`. Raise an exception in this case.
-        if user is None:
-            raise serializers.ValidationError(
-                'A user with this email and password was not found.'
-            )
-
-        # Django provides a flag on our `User` model called `is_active`. The
-        # purpose of this flag is to tell us whether the user has been banned
-        # or deactivated. This will almost never be the case, but
-        # it is worth checking. Raise an exception in this case.
-        if not user.is_active:
-            raise serializers.ValidationError(
-                'This user has been deactivated.'
-            )
-
-        # The `validate` method should return a dictionary of validated data.
-        # This is the data that is passed to the `create` and `update` methods
-        # that we will see later on.
+        token, _ = Token.objects.get_or_create(user=user)
         return {
-            'email': user.email,
-            'username': user.username,
-            'token': user.token
+            'token': token
         }
 
 
@@ -97,12 +65,11 @@ class UserSerializer(serializers.ModelSerializer):
         write_only=True
     )
 
-
     class Meta:
         model = User
-        fields = ('id', 'email', 'username','name','surname','phone','role', 'password', )
+        fields = ('id', 'email', 'username', 'name',
+                  'surname', 'phone', 'role', 'password', )
         read_only_fields = ('token',)
-
 
     def update(self, instance, validated_data):
         """Performs an update on a User."""
@@ -129,8 +96,9 @@ class RoleSerializer(serializers.ModelSerializer):
 
 
 class ChangePasswordSerializer(serializers.Serializer):
-  oldpassword = serializers.CharField(max_length=255)
-  newpassword = serializers.CharField(max_length=128)
-  class Meta:
-    model = User
-    fields = ('oldpassword', 'newpassword')
+    oldpassword = serializers.CharField(max_length=255)
+    newpassword = serializers.CharField(max_length=128)
+
+    class Meta:
+        model = User
+        fields = ('oldpassword', 'newpassword')

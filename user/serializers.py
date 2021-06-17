@@ -34,16 +34,16 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 class LoginSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=255, write_only=True)
-    id_token = serializers.CharField(write_only=True)
+    # id_token = serializers.CharField(write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
 
     def validate(self, data):
-        id_token = data.get('id_token')
+        # id_token = data.get('id_token')
         phone = data.get('phone', None)
 
-        decoded_token = auth.verify_id_token(id_token)
-        uid = decoded_token['uid']
-        print(uid)
+        # decoded_token = auth.verify_id_token(id_token)
+        # uid = decoded_token['uid']
+        # print(uid)
 
         try:
             user = User.objects.get(phone=phone)

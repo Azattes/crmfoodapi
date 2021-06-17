@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'user',
     'jwt',
     'djoser',
+    'tabular_permissions',
     'rest_framework.authtoken',
 ]
 
@@ -139,3 +140,5 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# FIXTURE_DIRS = os.path.join(BASE_DIR, 'fixtures')

@@ -25,7 +25,8 @@ class DepartmentsSerializer(serializers.ModelSerializer):
 
 class MealCategoriesSerializer(serializers.ModelSerializer):
 
-    departmentid = serializers.PrimaryKeyRelatedField(queryset = Departments.objects.all())
+    departmentid = serializers.PrimaryKeyRelatedField(
+        queryset=Departments.objects.all())
 
     class Meta:
         model = MealCategories
@@ -34,7 +35,8 @@ class MealCategoriesSerializer(serializers.ModelSerializer):
 
 class MealsSerializer(serializers.ModelSerializer):
 
-    categoryid = serializers.PrimaryKeyRelatedField(queryset = MealCategories.objects.all())
+    categoryid = serializers.PrimaryKeyRelatedField(
+        queryset=MealCategories.objects.all())
 
     class Meta:
         model = Meals
@@ -44,18 +46,19 @@ class MealsSerializer(serializers.ModelSerializer):
 class MealsToOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model= MealsToOrder
+        model = MealsToOrder
         fields = ['id', 'order']
 
 
 class OrderSerializer(serializers.ModelSerializer):
 
-    tableid = serializers.PrimaryKeyRelatedField(queryset = Tables.objects.all())
+    tableid = serializers.PrimaryKeyRelatedField(queryset=Tables.objects.all())
     mealsid = MealsSerializer(many=True)
 
     class Meta:
         model = Order
-        fields = ['id', 'isitopen', 'waiterid', 'date', 'tableid', 'tablename', 'mealsid']
+        fields = ['id', 'isitopen', 'waiterid',
+                  'date', 'tableid', 'tablename', 'mealsid']
 
     def get_table_name(self, obj):
         table = obj.table_id

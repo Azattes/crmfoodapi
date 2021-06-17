@@ -7,3 +7,4 @@ crmfood/.env
 user/__pycache__
 *.json
 *.pyc
+static
